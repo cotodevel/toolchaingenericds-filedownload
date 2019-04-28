@@ -197,6 +197,8 @@ void menuShow(){
 	printf("                              ");
 	printf("ToolchainGenericDS-filedownload: ");
 	printf("A: Download PDF File from server");
+	printf("X: Download MP3 File from server");
+	
 	printf("B: clear messages");
 	printf("                              ");
 	printf("DS IP address: %s ", (char*)print_ip((uint32)Wifi_GetIP()));	
@@ -257,6 +259,30 @@ int main(int _argc, sint8 **_argv) {
 				printf("Download FAIL. Check URL / DLDI Driver");
 			}
 			while(keysPressed() & KEY_A){
+				scanKeys();
+			}
+		}
+		
+		if (keysPressed() & KEY_X){
+			int ServerPort = 80;
+			char * fileDownloadURL = "www.largesound.com/ashborytour/sound/brobob.mp3";
+			char * fileDownloadDir = "0:/";
+			
+			printf("    ");
+			printf("    ");
+			printf("    ");
+			printf("    ");
+			
+			printf("Downloading...");
+			printf("%s", fileDownloadURL);
+			
+			if(DownloadFileFromServer(fileDownloadURL, ServerPort, fileDownloadDir) == true){
+				printf("Download OK @ SD path: %s ", fileDownloadDir);
+			}
+			else{
+				printf("Download FAIL. Check URL / DLDI Driver");
+			}
+			while(keysPressed() & KEY_X){
 				scanKeys();
 			}
 		}
