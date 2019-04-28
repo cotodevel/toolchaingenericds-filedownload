@@ -231,9 +231,9 @@ int main(int _argc, sint8 **_argv) {
 	setupCustomExceptionHandler((uint32*)&CustomDebugHandler);
 	InitializeThreads();
 	
-	menuShow();
 	connectDSWIFIAP(DSWNIFI_ENTER_WIFIMODE);	
-    
+    menuShow();
+	
 	while (1){
 		scanKeys();
 		
