@@ -142,7 +142,7 @@ bool DownloadFileFromServer(char * downloadAddr, int ServerPort, char * outputPa
 		printf("Connected to server! ");
 	}
 	else{
-		printf("Could not connect. ");
+		printf("Could not connect. Check DS Firmware AP settings and set a valid DNS Server.");
 		return false;
 	}
     //Send request
