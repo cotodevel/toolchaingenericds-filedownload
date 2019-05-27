@@ -70,7 +70,6 @@ using namespace std;
 #include "dmaTGDS.h"
 #include "biosTGDS.h"
 #include "nds_cp15_misc.h"
-#include "notifierProcessor.h"
 #include "limitsTGDS.h"
 #include "dswnifi_lib.h"
 
@@ -210,7 +209,6 @@ int main(int _argc, sint8 **_argv) {
 	
 	//custom Handler
 	setupCustomExceptionHandler((uint32*)&CustomDebugHandler);
-	InitializeThreads();
 	
 	connectDSWIFIAP(DSWNIFI_ENTER_WIFIMODE);	
     menuShow();
