@@ -28,6 +28,7 @@ USA
 #include "timerTGDS.h"
 #include "CPUARMTGDS.h"
 
+bool isArm7ClosedLid = false;
 
 //---------------------------------------------------------------------------------
 int main(int _argc, sint8 **_argv) {
@@ -37,6 +38,15 @@ int main(int _argc, sint8 **_argv) {
 	/*			TGDS 1.5 Standard ARM7 Init code end	*/
 	
     while (1) {
+		
+		if(isArm7ClosedLid == false){
+			if((REG_KEYXY & KEY_HINGE) == KEY_HINGE){
+				SendFIFOWords(FIFO_IRQ_LIDHASCLOSED_SIGNAL, 0);
+				screenLidHasClosedhandlerUser();
+				isArm7ClosedLid = true;
+			}
+		}
+		
 		IRQVBlankWait();
 	}
    

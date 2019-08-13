@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 extern int main(int _argc, sint8 **_argv);
+extern bool isArm7ClosedLid;
 
 #ifdef __cplusplus
 }
