@@ -179,7 +179,8 @@ void menuShow(){
 	
 	printf("B: clear messages");
 	printf("                              ");
-	printf("DS IP address: %s ", (char*)print_ip((uint32)Wifi_GetIP()));	
+	char IP[16];
+	printf("DS IP address: %s ", print_ip((uint32)Wifi_GetIP(), IP));
 	
 }
 
