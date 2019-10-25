@@ -33,7 +33,7 @@ USA
 #include "dsregs_asm.h"
 #include "ipcfifoTGDS.h"
 #include "dswnifi.h"
-#include "memoryHandleTGDS.h"
+#include "utilsTGDS.h"
 
 //---------------------------------------------------------------------------------
 struct sIPCSharedTGDSSpecific {
