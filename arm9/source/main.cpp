@@ -140,7 +140,7 @@ bool DownloadFileFromServer(char * downloadAddr, int ServerPort, char * outputPa
 		printf("Connected to server! ");
 	}
 	else{
-		printf("Could not connect. Check DS Firmware AP settings and set a valid DNS Server.");
+		printf("Could not connect. Check DS Firmware AP settings.");
 		return false;
 	}
     //Send request
@@ -233,7 +233,7 @@ int main(int _argc, sint8 **_argv) {
 				printf("Download OK @ SD path: %s ", fileDownloadDir);
 			}
 			else{
-				printf("Download FAIL. Check URL / DLDI Driver");
+				printf("Download FAIL. Check: URL / DLDI Driver / Internet ");
 			}
 			while(keysPressed() & KEY_A){
 				scanKeys();
