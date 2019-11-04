@@ -23,18 +23,14 @@ USA
 
 #include "typedefsTGDS.h"
 #include "dsregs.h"
-#include "limitsTGDS.h"
+#include "dsregs_asm.h"
 
 #ifdef __cplusplus
+
 //C++ part
 using namespace std;
-#include <iostream>
-#include <fstream>
-#include <list>
-#include <vector>
-#include <cmath>
-#include <cstdlib>
-#include <cstdio>
+#include <string>
+
 #endif
 
 

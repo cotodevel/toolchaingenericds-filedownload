@@ -18,60 +18,17 @@ USA
 
 */
 
-//C++ part
-#include <iostream>
-#include <fstream>
-#include <list>
-#include <vector>
-#include <cmath>
-#include <cstdlib>
-#include <cstdio>
-#include <iterator>
-
-using namespace std;
-
-#include "socket.h"
-#include "in.h"
-#include <netdb.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-
-#include "main.h"
-#include "InterruptsARMCores_h.h"
-#include "ipcfifoTGDSUser.h"
-#include "ff.h"
-#include "fileHandleTGDS.h"
-#include "reent.h"
-#include "sys/types.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
-#include "typedefsTGDS.h"
-#include "consoleTGDS.h"
-#include "utilsTGDS.h"
-
-#include "devoptab_devices.h"
-#include "fatfslayerTGDS.h"
-#include "usrsettingsTGDS.h"
-#include "exceptionTGDS.h"
-
-#include "videoTGDS.h"
-#include "keypadTGDS.h"
-#include "dldi.h"
-#include "SpecialFunctions.h"
-#include "dmaTGDS.h"
-#include "biosTGDS.h"
-#include "nds_cp15_misc.h"
-#include "limitsTGDS.h"
+#include "gui_console_connector.h"
+#include <in.h>
 #include "dswnifi_lib.h"
 
+//C++ part
+using namespace std;
+#include <string>
+#include <vector>
 
 //customHandler 
 void CustomDebugHandler(){
@@ -270,44 +227,6 @@ int main(int _argc, sint8 **_argv) {
 				scanKeys();
 			}
 		}
-		
-		
-		/*
-		if (keysPressed() & KEY_B){
-			//	//float printf support: todo
-			// sqrtf() is a library function to calculate square root
-			//float number = 5.0, squareRoot = 0.0;
-			//squareRoot = sqrtf(number);
-			//printf("float:Square root of %f=%f",number,squareRoot);
-			
-			//double number2 = 4.0, squareRoot2 = 0.0;
-			//squareRoot = sqrt(number2);
-			//printf("double:Square root of %lf=%lf",number,squareRoot);
-
-			cl s;
-
-			s.put_i(10);
-			printf("Test1:res:%d",s.get_i());
-			
-			//test constructor
-			Box BoxInst(20,20,80);
-			printf("Test2:Box Test:%d",BoxInst.volume());
-			
-			//copy constructor
-			printf("Test3: Constructor");
-			myclass a(10);
-			display(a);
-			
-			while(keysPressed() & KEY_B){}
-		}
-		
-		if (keysPressed() & KEY_X){
-			printf("Test4: Destructor");
-			myclass2 a(10);
-			display2(a);
-			while(keysPressed() & KEY_X){}
-		}
-		*/
 		
 		IRQVBlankWait();
 	}
