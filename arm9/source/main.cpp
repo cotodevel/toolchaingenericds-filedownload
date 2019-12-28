@@ -25,6 +25,7 @@ USA
 #include <in.h>
 #include "dswnifi_lib.h"
 #include "TGDSLogoLZSSCompressed.h"
+#include "biosTGDS.h"
 
 //C++ part
 using namespace std;
@@ -232,6 +233,7 @@ int main(int _argc, sint8 **_argv) {
 			}
 		}
 		
+		handleARM9SVC();	/* Do not remove, handles TGDS services */
 		IRQVBlankWait();
 	}
 
