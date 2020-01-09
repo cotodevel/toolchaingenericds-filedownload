@@ -134,8 +134,8 @@ void menuShow(){
 	printf("ToolchainGenericDS-filedownload: ");
 	printf("A: Download PDF File from server");
 	printf("X: Download MP3 File from server");
-	
 	printf("B: clear messages");
+	printf("Available heap memory: %d", getMaxRam());
 	printf("                              ");
 	char IP[16];
 	printf("DS IP address: %s ", print_ip((uint32)Wifi_GetIP(), IP));
