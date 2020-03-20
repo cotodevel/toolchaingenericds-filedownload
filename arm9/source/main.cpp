@@ -1,5 +1,4 @@
 /*
-
 			Copyright (C) 2017  Coto
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,7 +14,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 USA
-
 */
 
 #include "typedefsTGDS.h"
@@ -35,32 +33,6 @@ using namespace std;
 #include <string>
 #include <vector>
 
-//customHandler 
-void CustomDebugHandler(){
-	clrscr();
-	
-	//Init default console here
-	bool isTGDSCustomConsole = false;	//set default console or custom console: default console
-	GUI_init(isTGDSCustomConsole);
-	GUI_clear();
-	
-	printf("custom Handler!");
-	uint32 * debugVector = (uint32 *)&exceptionArmRegs[0];
-	uint32 pc_abort = (uint32)exceptionArmRegs[0xf];
-	
-	if((debugVector[0xe] & 0x1f) == 0x17){
-		pc_abort = pc_abort - 8;
-	}
-	
-	printf("R0[%x] R1[%X] R2[%X] ",debugVector[0],debugVector[1],debugVector[2]);
-	printf("R3[%x] R4[%X] R5[%X] ",debugVector[3],debugVector[4],debugVector[5]);
-	printf("R6[%x] R7[%X] R8[%X] ",debugVector[6],debugVector[7],debugVector[8]);
-	printf("R9[%x] R10[%X] R11[%X] ",debugVector[9],debugVector[0xa],debugVector[0xb]);
-	printf("R12[%x] R13[%X] R14[%X]  ",debugVector[0xc],debugVector[0xd],debugVector[0xe]);
-	printf("R15[%x] SPSR[%x] CPSR[%X]  ",pc_abort,debugVector[17],debugVector[16]);
-	while(1==1){}
-}
-
 vector<string> splitCustom(string str, string token){
     vector<string>result;
     while(str.size()){
@@ -76,7 +48,6 @@ vector<string> splitCustom(string str, string token){
     }
     return result;
 }
-
 
 bool DownloadFileFromServer(char * downloadAddr, int ServerPort, char * outputPath){
 	std::string strURL = string(downloadAddr);
@@ -142,7 +113,6 @@ void menuShow(){
 	printf("                              ");
 	char IP[16];
 	printf("DS IP address: %s ", print_ip((uint32)Wifi_GetIP(), IP));
-	
 }
 
 int main(int _argc, sint8 **_argv) {
@@ -179,15 +149,11 @@ int main(int _argc, sint8 **_argv) {
 	//Remove logo and restore Main Engine registers
 	//restoreFBModeMainEngine();
 	
-	//custom Handler
-	setupCustomExceptionHandler((uint32*)&CustomDebugHandler);
-	
 	connectDSWIFIAP(DSWNIFI_ENTER_WIFIMODE);	
     menuShow();
 	
 	while (1){
 		scanKeys();
-		
 		if (keysPressed() & KEY_A){
 			int ServerPort = 80;
 			char * fileDownloadURL = "www.axmag.com/download/pdfurl-guide.pdf";
@@ -246,5 +212,4 @@ int main(int _argc, sint8 **_argv) {
 		handleARM9SVC();	/* Do not remove, handles TGDS services */
 		IRQVBlankWait();
 	}
-
 }
