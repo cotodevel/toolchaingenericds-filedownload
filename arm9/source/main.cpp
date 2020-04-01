@@ -113,7 +113,7 @@ void menuShow(){
 	printf("                              ");
 	char IP[16];
 	printf("DS IP address: %s ", print_ip((uint32)Wifi_GetIP(), IP));
-	printf("ARM7 Status: %s", getarm7DebugBuffer());
+	printarm7DebugBuffer();
 }
 
 int main(int _argc, sint8 **_argv) {
