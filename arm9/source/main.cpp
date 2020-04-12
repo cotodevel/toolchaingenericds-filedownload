@@ -162,8 +162,8 @@ int main(int _argc, sint8 **_argv) {
 			
 			printf("    ");
 			printf("    ");
-			printf("    ");
-			printf("    ");
+			printf("Being Download.");
+			clrscr();
 			
 			printf("Downloading...");
 			printf("%s", fileDownloadURL);
