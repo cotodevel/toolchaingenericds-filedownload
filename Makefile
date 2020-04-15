@@ -78,6 +78,7 @@ export DIRS_ARM9_SRC = data/	\
 			source/	\
 			source/interrupts/	\
 			source/gui/	\
+			source/TGDSMemoryAllocator/	\
 			../common/	\
 			../common/templateCode/source/	\
 			../common/templateCode/data/arm9/	
@@ -86,6 +87,7 @@ export DIRS_ARM9_HEADER = data/	\
 			build/	\
 			include/	\
 			source/gui/	\
+			source/TGDSMemoryAllocator/	\
 			../common/	\
 			../common/templateCode/source/	\
 			../common/templateCode/data/arm9/	\
