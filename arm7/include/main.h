@@ -23,7 +23,7 @@ USA
 
 #include "typedefsTGDS.h"
 #include "dsregs.h"
-
+#include "soundTGDS.h"
 #endif
 
 
@@ -32,7 +32,11 @@ extern "C" {
 #endif
 
 extern int main(int _argc, sint8 **_argv);
-
+extern u16 strpcmL0Buf[WAV_READ_SIZE];
+extern u16 strpcmL1Buf[WAV_READ_SIZE];
+extern u16 strpcmR0Buf[WAV_READ_SIZE];
+extern u16 strpcmR1Buf[WAV_READ_SIZE];
+extern void initSoundStreamUser();
 #ifdef __cplusplus
 }
 #endif
