@@ -118,7 +118,7 @@ void menuShow(){
 	printarm7DebugBuffer();
 }
 
-int main(int _argc, sint8 **_argv) {
+int main(int argc, char argv[argvItems][MAX_TGDSFILENAME_LENGTH]) {
 	
 	/*			TGDS 1.5 Standard ARM9 Init code start	*/
 	bool isTGDSCustomConsole = false;	//set default console or custom console: default console
