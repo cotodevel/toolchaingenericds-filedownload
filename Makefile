@@ -146,3 +146,8 @@ rebase:
 	git reset --hard HEAD
 	git clean -f -d
 	git pull
+
+commitChanges:
+	-@git commit -a	-m '$(COMMITMSG)'
+	-@git push origin HEAD
+	
