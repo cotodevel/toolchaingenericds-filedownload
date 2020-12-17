@@ -32,7 +32,7 @@ extern "C" {
 #endif
 
 extern int main(int _argc, sint8 **_argv);
-extern void initSoundStreamUser();
+
 #ifdef __cplusplus
 }
 #endif
