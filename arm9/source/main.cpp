@@ -61,56 +61,79 @@ bool DownloadFileFromServer(char * downloadAddr, int ServerPort, char * outputPa
     std::string strPath = strURL.substr(start, end); 
 	std::string strFilename = vecOut.at(vecOut.size() - 1);
 	
-	const char * message;
+	int socket_desc;
+    const char * message;
     char server_reply[10000];
     int total_len = 0;
     int len; 
 
     FILE *file = NULL;
-	struct sockaddr_in server;	//structure holding the server IP/Port DS connects to.
-	int serverSocket = openAsyncConn((char*)ServerDNS.c_str(), 80, &server);
-	bool connStatus = connectAsync(serverSocket, &server);
+    struct sockaddr_in server;
 	
-    if((serverSocket >= 0) && (connStatus ==true)){
-		printf("Connected to server! ");
-	}
-	else{
-		printf("Could not connect. Check DS Firmware AP settings.");
-		return false;
-	}
+	// Find the IP address of the server, with gethostbyname
+    struct hostent * myhost = gethostbyname(ServerDNS.c_str());
+	
+	struct in_addr **address_list = (struct in_addr **)myhost->h_addr_list;
+    for(int i = 0; address_list[i] != NULL; i++){
+        //printf("Server WAN IP Address! %s", inet_ntoa(*address_list[i]));
+    }
+	
+    //Create socket
+    socket_desc = socket(AF_INET , SOCK_STREAM , 0);
+    if (socket_desc == -1)
+    {
+        return false;	//Could not create socket
+    }
+	
+	memset(&server, 0, sizeof(server)); 
+	int i=1;
+	i=ioctl(socket_desc, FIONBIO,&i);	//set non-blocking
+	
+    server.sin_family = AF_INET;
+    server.sin_port = htons(ServerPort);
+    server.sin_addr.s_addr= *( (unsigned long *)(myhost->h_addr_list[0]) );
+    
+	connect(socket_desc,(struct sockaddr *)&server, sizeof(server));
+    //printf("Connected to server! ");
+	
     //Send request
 	message =  string("GET " + strPath + " HTTP/1.1\r\nHost: " + ServerDNS +" \r\n\r\n Connection: keep-alive\r\n\r\n Keep-Alive: 300\r\n").c_str();
-    if( send(serverSocket , message , strlen(message) , 0) < 0)
+    if( send(socket_desc , message , strlen(message) , 0) < 0)
     {
         return false;
     }
+	
     remove( string(string(outputPath) + strFilename).c_str() );
     file = fopen(string(string(outputPath) + strFilename).c_str(), "w+");
 
     if(file == NULL){
-		disconnectAsync(serverSocket);
         return false;
 	}
+	
 	int received_len = 0;
-	while( ( received_len = recv( serverSocket, server_reply, sizeof(server_reply), 0 ) ) != 0 ) { // if recv returns 0, the socket has been closed.
+	while( ( received_len = recv( socket_desc, server_reply, sizeof(server_reply), 0 ) ) != 0 ) { // if recv returns 0, the socket has been closed.
 		if(received_len>0) { // data was received!
 			total_len += received_len;
 			fwrite(server_reply , received_len , 1, file);
-			//printf("Received byte size = %d Total lenght = %d", received_len, total_len);
+			printfCoords(0, 5, "---------------------------------------- ");
+			printfCoords(0, 5, "Received byte size = %d Total length = %d >%d", received_len, total_len, TGDSPrintfColor_Yellow);
 		}
 	}
-	disconnectAsync(serverSocket);
-	fclose(file);
+
+	shutdown(socket_desc,0); // good practice to shutdown the socket.
+	closesocket(socket_desc); // remove the socket.
+    fclose(file);
 	return true;
 }
 
 void menuShow(){
 	clrscr();
-	printf("                              ");
-	printf("ToolchainGenericDS-filedownload: ");
+	printf(" ------------------------ ");
+	
+	printf("ToolchainGenericDS-filedownload: >%d", TGDSPrintfColor_Green);
 	printf("A: Download PDF File from server");
 	printf("X: Download MP3 File from server");
-	printf("B: clear messages");
+	
 	printf("Available heap memory: %d", getMaxRam());
 	printf("                              ");
 	char IP[16];
@@ -156,6 +179,7 @@ int main(int argc, char argv[argvItems][MAX_TGDSFILENAME_LENGTH]) {
 	//Remove logo and restore Main Engine registers
 	//restoreFBModeMainEngine();
 	
+	printf("Connecting to Access Point...");
 	connectDSWIFIAP(DSWNIFI_ENTER_WIFIMODE);	
     menuShow();
 	
@@ -166,11 +190,9 @@ int main(int argc, char argv[argvItems][MAX_TGDSFILENAME_LENGTH]) {
 			char * fileDownloadURL = "www.axmag.com/download/pdfurl-guide.pdf";
 			char * fileDownloadDir = "0:/";
 			
-			printf("    ");
-			printf("    ");
-			printf("Being Download.");
 			clrscr();
-			
+			printf(" ---- ");
+			printf(" ---- ");
 			printf("Downloading...");
 			printf("%s", fileDownloadURL);
 			
@@ -180,9 +202,16 @@ int main(int argc, char argv[argvItems][MAX_TGDSFILENAME_LENGTH]) {
 			else{
 				printf("Download FAIL. Check: URL / DLDI Driver / Internet ");
 			}
+			printf("Press (A) to continue. ");
+			scanKeys();
+			while(!keysPressed() & KEY_A){
+				scanKeys();
+			}
+			scanKeys();
 			while(keysPressed() & KEY_A){
 				scanKeys();
 			}
+			menuShow();
 		}
 		
 		if (keysPressed() & KEY_X){
@@ -190,11 +219,9 @@ int main(int argc, char argv[argvItems][MAX_TGDSFILENAME_LENGTH]) {
 			char * fileDownloadURL = "www.largesound.com/ashborytour/sound/brobob.mp3";
 			char * fileDownloadDir = "0:/";
 			
-			printf("    ");
-			printf("    ");
-			printf("    ");
-			printf("    ");
-			
+			clrscr();
+			printf(" ---- ");
+			printf(" ---- ");
 			printf("Downloading...");
 			printf("%s", fileDownloadURL);
 			
@@ -204,16 +231,16 @@ int main(int argc, char argv[argvItems][MAX_TGDSFILENAME_LENGTH]) {
 			else{
 				printf("Download FAIL. Check URL / DLDI Driver");
 			}
-			while(keysPressed() & KEY_X){
+			printf("Press (A) to continue. ");
+			scanKeys();
+			while(!keysPressed() & KEY_A){
 				scanKeys();
 			}
-		}
-		
-		if (keysPressed() & KEY_B){
+			scanKeys();
+			while(keysPressed() & KEY_A){
+				scanKeys();
+			}
 			menuShow();
-			while(keysPressed() & KEY_B){
-				scanKeys();
-			}
 		}
 		
 		handleARM9SVC();	/* Do not remove, handles TGDS services */
