@@ -165,7 +165,7 @@ int main(int argc, char argv[argvItems][MAX_TGDSFILENAME_LENGTH]) {
 	
 	while (1){
 		scanKeys();
-		if (keysPressed() & KEY_A){
+		if (keysDown() & KEY_A){
 			int ServerPort = 80;
 			char * fileDownloadURL = "www.axmag.com/download/pdfurl-guide.pdf";
 			char * fileDownloadDir = "0:/";
@@ -184,17 +184,17 @@ int main(int argc, char argv[argvItems][MAX_TGDSFILENAME_LENGTH]) {
 			}
 			printf("Press (A) to continue. ");
 			scanKeys();
-			while(!keysPressed() & KEY_A){
+			while(!keysDown() & KEY_A){
 				scanKeys();
 			}
 			scanKeys();
-			while(keysPressed() & KEY_A){
+			while(keysDown() & KEY_A){
 				scanKeys();
 			}
 			menuShow();
 		}
 		
-		if (keysPressed() & KEY_X){
+		if (keysDown() & KEY_X){
 			int ServerPort = 80;
 			char * fileDownloadURL = "www.largesound.com/ashborytour/sound/brobob.mp3";
 			char * fileDownloadDir = "0:/";
@@ -213,11 +213,11 @@ int main(int argc, char argv[argvItems][MAX_TGDSFILENAME_LENGTH]) {
 			}
 			printf("Press (A) to continue. ");
 			scanKeys();
-			while(!keysPressed() & KEY_A){
+			while(!keysDown() & KEY_A){
 				scanKeys();
 			}
 			scanKeys();
-			while(keysPressed() & KEY_A){
+			while(keysDown() & KEY_A){
 				scanKeys();
 			}
 			menuShow();
