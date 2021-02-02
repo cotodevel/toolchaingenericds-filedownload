@@ -32,14 +32,16 @@ USA
 #include "dsregs_asm.h"
 #include "ipcfifoTGDS.h"
 #include "dswnifi.h"
-#include "utilsTGDS.h"
+#include "posixHandleTGDS.h"
 
 //---------------------------------------------------------------------------------
-typedef struct sIPCSharedTGDSSpecific{
+struct sIPCSharedTGDSSpecific {
 //---------------------------------------------------------------------------------
 	uint32 frameCounter7;	//VBLANK counter7
 	uint32 frameCounter9;	//VBLANK counter9
-}  IPCSharedTGDSSpecific	__attribute__((aligned (4)));
+};
+
+#ifdef ARM9
 
 //TGDS Memory Layout ARM7/ARM9 Cores
 #define TGDS_ARM7_MALLOCSTART (u32)(0x06000000)
@@ -48,14 +50,17 @@ typedef struct sIPCSharedTGDSSpecific{
 
 #endif
 
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern struct sIPCSharedTGDSSpecific* getsIPCSharedTGDSSpecific();
 //NOT weak symbols : the implementation of these is project-defined (here)
-extern void HandleFifoNotEmptyWeakRef(uint32 cmd1,uint32 cmd2);
+extern void HandleFifoNotEmptyWeakRef(volatile u32 cmd1);
 extern void HandleFifoEmptyWeakRef(uint32 cmd1,uint32 cmd2);
+
+extern struct sIPCSharedTGDSSpecific* getsIPCSharedTGDSSpecific();
 
 #ifdef __cplusplus
 }

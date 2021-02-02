@@ -1,4 +1,5 @@
 /*
+
 			Copyright (C) 2017  Coto
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -14,119 +15,70 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
 USA
+
 */
 
+#include "main.h"
 #include "typedefsTGDS.h"
 #include "dsregs.h"
-#include "dsregs_asm.h"
-#include "gui_console_connector.h"
-#include <in.h>
 #include "dswnifi_lib.h"
+#include "keypadTGDS.h"
 #include "TGDSLogoLZSSCompressed.h"
+#include "fileBrowse.h"	//generic template functions from TGDS: maintain 1 source, whose changes are globally accepted by all TGDS Projects.
 #include "biosTGDS.h"
 #include "ipcfifoTGDSUser.h"
 #include "dldi.h"
 #include "global_settings.h"
 #include "posixHandleTGDS.h"
 #include "TGDSMemoryAllocator.h"
+#include "consoleTGDS.h"
+#include "soundTGDS.h"
+#include "nds_cp15_misc.h"
+#include "fatfslayerTGDS.h"
+#include "utilsTGDS.h"
+#include "click_raw.h"
+#include "ima_adpcm.h"
 
-//C++ part
-using namespace std;
-#include <string>
-#include <vector>
 
-vector<string> splitCustom(string str, string token){
-    vector<string>result;
-    while(str.size()){
-        int index = str.find(token);
-        if(index != (int)string::npos){
-            result.push_back(str.substr(0,index));
-            str = str.substr(index+token.size());
-            if(str.size()==0)result.push_back(str);
-        }else{
-            result.push_back(str);
-            str = "";
-        }
-    }
-    return result;
-}
+// Includes
+#include "WoopsiTemplate.h"
 
-bool DownloadFileFromServer(char * downloadAddr, int ServerPort, char * outputPath){
-	std::string strURL = string(downloadAddr);
-    vector <string> vecOut = splitCustom(strURL, string("/"));
-    std::string ServerDNS = vecOut.at(0);
-    
-    size_t start = strlen(ServerDNS.c_str());
-    size_t end = strlen(downloadAddr) - strlen(ServerDNS.c_str()); // Assume this is an exclusive bound.
-    std::string strPath = strURL.substr(start, end); 
-	std::string strFilename = vecOut.at(vecOut.size() - 1);
-	
-	// Find the IP address of the server, with gethostbyname
-    struct hostent * myhost = gethostbyname(ServerDNS.c_str());
-    printf("Found IP Address!");
- 
-    // Create a TCP socket
-    int my_socket = socket( AF_INET, SOCK_STREAM, 0 );
-    printf("Created Socket!");
-
-    // Tell the socket to connect to the IP address we found, on port 80 (HTTP)
-    struct sockaddr_in sain;
-    sain.sin_family = AF_INET;
-    sain.sin_port = htons(80);
-    sain.sin_addr.s_addr= *( (unsigned long *)(myhost->h_addr_list[0]) );
-    connect( my_socket,(struct sockaddr *)&sain, sizeof(sain) );
-    printf("Connected to server!");
-	
-    //Send request
-	FILE *file = NULL;
-    char server_reply[10000];
-    int total_len = 0;
-	const char * message =  string("GET " + strPath + " HTTP/1.1\r\nHost: " + ServerDNS +" \r\n\r\n Connection: keep-alive\r\n\r\n Keep-Alive: 300\r\n").c_str();
-    if( send(my_socket, message , strlen(message) , 0) < 0)
-    {
-        return false;
-    }
-    remove( string(string(outputPath) + strFilename).c_str() );
-    file = fopen(string(string(outputPath) + strFilename).c_str(), "w+");
-    if(file == NULL){
-        return false;
-	}
-	int received_len = 0;
-	while( ( received_len = recv(my_socket, server_reply, sizeof(server_reply), 0 ) ) != 0 ) { // if recv returns 0, the socket has been closed.
-		if(received_len>0) { // data was received!
-			total_len += received_len;
-			fwrite(server_reply , received_len , 1, file);
-			printfCoords(0, 5, "---------------------------------------- ");
-			printfCoords(0, 5, "Received byte size = %d Total length = %d >%d", received_len, total_len, TGDSPrintfColor_Yellow);
-		}
-	}
-	shutdown(my_socket,0); // good practice to shutdown the socket.
-	closesocket(my_socket); // remove the socket.
-    fclose(file);
-	return true;
-}
-
-void menuShow(){
-	clrscr();
-	printf(" ------------------------ ");
-	
-	printf("ToolchainGenericDS-filedownload: >%d", TGDSPrintfColor_Green);
-	printf("A: Download PDF File from server");
-	printf("X: Download MP3 File from server");
-	
-	printf("Available heap memory: %d", getMaxRam());
-	printf("                              ");
-	char IP[16];
-	printf("DS IP address: %s ", print_ip((uint32)Wifi_GetIP(), IP));
-	printarm7DebugBuffer();
-}
+//TGDS Soundstreaming API
+int internalCodecType = SRC_NONE; //Returns current sound stream format: WAV, ADPCM or NONE
+struct fd * _FileHandleVideo = NULL; 
+struct fd * _FileHandleAudio = NULL;
 
 bool stopSoundStreamUser(){
-	
+	return stopSoundStream(_FileHandleVideo, _FileHandleAudio, &internalCodecType);
 }
 
 void closeSoundUser(){
 	//Stubbed. Gets called when closing an audiostream of a custom audio decoder
+}
+
+static inline void menuShow(){
+	clrscr();
+	printf("     ");
+	printf("     ");
+	printf("ToolchainGenericDS-filedownload: ");
+	printf("(Select): This menu. ");
+	printf("(Start): FileBrowser : (A) Play WAV/IMA-ADPCM (Intel) strm ");
+	printf("(D-PAD:UP/DOWN): Volume + / - ");
+	printf("(D-PAD:LEFT): GDB Debugging. >%d", TGDSPrintfColor_Green);
+	printf("(D-PAD:RIGHT): Demo Sound. >%d", TGDSPrintfColor_Yellow);
+	printf("(B): Stop WAV/IMA-ADPCM file. ");
+	printf("Current Volume: %d", (int)getVolume());
+	if(internalCodecType == SRC_WAVADPCM){
+		printf("ADPCM Play: >%d", TGDSPrintfColor_Red);
+	}
+	else if(internalCodecType == SRC_WAV){	
+		printf("WAVPCM Play: >%d", TGDSPrintfColor_Green);
+	}
+	else{
+		printf("Player Inactive");
+	}
+	printf("Available heap memory: %d >%d", getMaxRam(), TGDSPrintfColor_Cyan);
+	printarm7DebugBuffer();
 }
 
 int main(int argc, char **argv) {
@@ -135,17 +87,17 @@ int main(int argc, char **argv) {
 	bool isTGDSCustomConsole = false;	//set default console or custom console: default console
 	GUI_init(isTGDSCustomConsole);
 	GUI_clear();
+	
+	printf("              ");
+	printf("              ");
+	
 	bool isCustomTGDSMalloc = true;
 	setTGDSMemoryAllocator(getProjectSpecificMemoryAllocatorSetup(TGDS_ARM7_MALLOCSTART, TGDS_ARM7_MALLOCSIZE, isCustomTGDSMalloc));
 	sint32 fwlanguage = (sint32)getLanguage();
 	
-	printf("     ");
-	printf("     ");
-	
 	#ifdef ARM7_DLDI
 	setDLDIARM7Address((u32 *)TGDSDLDI_ARM7_ADDRESS);	//Required by ARM7DLDI!
 	#endif
-	
 	int ret=FS_init();
 	if (ret == 0)
 	{
@@ -164,74 +116,16 @@ int main(int argc, char **argv) {
 	//Show logo
 	RenderTGDSLogoMainEngine((uint8*)&TGDSLogoLZSSCompressed[0], TGDSLogoLZSSCompressed_size);
 	
-	//Remove logo and restore Main Engine registers
-	//restoreFBModeMainEngine();
+	// Create Woopsi UI
+	WoopsiTemplate WoopsiTemplateApp;
+	WoopsiTemplateProc = &WoopsiTemplateApp;
+	return WoopsiTemplateApp.main(argc, argv);
 	
-	printf("Connecting to Access Point...");
-	connectDSWIFIAP(DSWNIFI_ENTER_WIFIMODE);	
-    menuShow();
-	
-	while (1){
-		scanKeys();
-		if (keysDown() & KEY_A){
-			int ServerPort = 80;
-			char * fileDownloadURL = "www.axmag.com/download/pdfurl-guide.pdf";
-			char * fileDownloadDir = "0:/";
-			
-			clrscr();
-			printf(" ---- ");
-			printf(" ---- ");
-			printf("Downloading...");
-			printf("%s", fileDownloadURL);
-			
-			if(DownloadFileFromServer(fileDownloadURL, ServerPort, fileDownloadDir) == true){
-				printf("Download OK @ SD path: %s ", fileDownloadDir);
-			}
-			else{
-				printf("Download FAIL. Check: URL / DLDI Driver / Internet ");
-			}
-			printf("Press (A) to continue. ");
-			scanKeys();
-			while(!keysDown() & KEY_A){
-				scanKeys();
-			}
-			scanKeys();
-			while(keysDown() & KEY_A){
-				scanKeys();
-			}
-			menuShow();
-		}
-		
-		if (keysDown() & KEY_X){
-			int ServerPort = 80;
-			char * fileDownloadURL = "www.largesound.com/ashborytour/sound/brobob.mp3";
-			char * fileDownloadDir = "0:/";
-			
-			clrscr();
-			printf(" ---- ");
-			printf(" ---- ");
-			printf("Downloading...");
-			printf("%s", fileDownloadURL);
-			
-			if(DownloadFileFromServer(fileDownloadURL, ServerPort, fileDownloadDir) == true){
-				printf("Download OK @ SD path: %s ", fileDownloadDir);
-			}
-			else{
-				printf("Download FAIL. Check URL / DLDI Driver");
-			}
-			printf("Press (A) to continue. ");
-			scanKeys();
-			while(!keysDown() & KEY_A){
-				scanKeys();
-			}
-			scanKeys();
-			while(keysDown() & KEY_A){
-				scanKeys();
-			}
-			menuShow();
-		}
-		
+	while(1) {
 		handleARM9SVC();	/* Do not remove, handles TGDS services */
-		IRQVBlankWait();
+		IRQWait(IRQ_HBLANK);
 	}
+
+	return 0;
 }
+

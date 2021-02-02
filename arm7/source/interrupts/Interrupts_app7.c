@@ -18,14 +18,14 @@ USA
 
 */
 
-#include "typedefsTGDS.h"
+#include "ipcfifoTGDSUser.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
+
+#include "InterruptsARMCores_h.h"
 #include "interrupts.h"
-#include "biosTGDS.h"
-#include "ipcfifoTGDSUser.h"
-#include "spifwTGDS.h"
 #include "wifi_arm7.h"
+#include "main.h"
 #include "eventsTGDS.h"
 
 //User Handler Definitions
@@ -46,49 +46,50 @@ void IpcSynchandlerUser(uint8 ipcByte){
 __attribute__((section(".itcm")))
 #endif
 void Timer0handlerUser(){
+
 }
 
 #ifdef ARM9
 __attribute__((section(".itcm")))
 #endif
 void Timer1handlerUser(){
+
 }
 
 #ifdef ARM9
 __attribute__((section(".itcm")))
 #endif
 void Timer2handlerUser(){
+
 }
 
 #ifdef ARM9
 __attribute__((section(".itcm")))
 #endif
 void Timer3handlerUser(){
+
 }
 
 #ifdef ARM9
 __attribute__((section(".itcm")))
 #endif
 void HblankUser(){
+
 }
 
 #ifdef ARM9
 __attribute__((section(".itcm")))
 #endif
 void VblankUser(){
-	struct sIPCSharedTGDSSpecific* TGDSUSERIPC = getsIPCSharedTGDSSpecific();
-	if(TGDSUSERIPC->frameCounter7 < 60){
-		TGDSUSERIPC->frameCounter7++;
-	}
-	else{
-		TGDSUSERIPC->frameCounter7 = 0;
-	}
+	
+
 }
 
 #ifdef ARM9
 __attribute__((section(".itcm")))
 #endif
 void VcounterUser(){
+
 }
 
 //Note: this event is hardware triggered from ARM7, on ARM9 a signal is raised through the FIFO hardware

@@ -23,16 +23,9 @@ USA
 
 #include "typedefsTGDS.h"
 #include "dsregs.h"
-#include "dsregs_asm.h"
-
-#ifdef __cplusplus
-
-//C++ part
-using namespace std;
-#include <string>
-
-#endif
-
+#include "fatfslayerTGDS.h"
+#include "utilsTGDS.h"
+#include "utilsTGDS.h"
 
 #endif
 
@@ -42,13 +35,14 @@ extern "C" {
 #endif
 
 extern int main(int argc, char **argv);
-extern char curChosenBrowseFile[MAX_TGDSFILENAME_LENGTH+1];
+extern void ApplicationMainLoop();
 
-#ifdef __cplusplus
-extern std::string getDldiDefaultPath();
-#endif
-
-extern bool DownloadFileFromServer(char * downloadAddr, int ServerPort, char * outputPath);
+//TGDS Soundstreaming API
+extern int internalCodecType;
+extern struct fd * _FileHandleVideo; 
+extern struct fd * _FileHandleAudio;
+extern bool stopSoundStreamUser();
+extern void closeSoundUser();
 
 #ifdef __cplusplus
 }
