@@ -362,7 +362,7 @@ bool DownloadFileFromServer(char * downloadAddr, int ServerPort, char * outputPa
 	while( ( received_len = recv(my_socket, server_reply, 100000, 0 ) ) != 0 ) { // if recv returns 0, the socket has been closed.
 		if(received_len>0) { // data was received!
 			total_len += received_len;
-			fwrite(server_reply , received_len , 1, file);
+			fwrite(server_reply, 1, received_len, file);
 			
 			memset(logConsole, 0, sizeof(logConsole));
 			sprintf(logConsole, "Received byte size = %d Total length = %d ", received_len, total_len);
