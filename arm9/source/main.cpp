@@ -95,16 +95,10 @@ int main(int argc, char **argv) {
 	GUI_init(isTGDSCustomConsole);
 	GUI_clear();
 	
-	printf("              ");
-	printf("              ");
-	
 	bool isCustomTGDSMalloc = true;
 	setTGDSMemoryAllocator(getProjectSpecificMemoryAllocatorSetup(TGDS_ARM7_MALLOCSTART, TGDS_ARM7_MALLOCSIZE, isCustomTGDSMalloc));
 	sint32 fwlanguage = (sint32)getLanguage();
 	
-	#ifdef ARM7_DLDI
-	setDLDIARM7Address((u32 *)TGDSDLDI_ARM7_ADDRESS);	//Required by ARM7DLDI!
-	#endif
 	int ret=FS_init();
 	if (ret == 0)
 	{
