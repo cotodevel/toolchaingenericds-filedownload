@@ -25,7 +25,7 @@ using namespace std;
 #include <string>
 #include <vector>
 
-__attribute__((section(".itcm")))
+__attribute__((section(".dtcm")))
 WoopsiTemplate * WoopsiTemplateProc = NULL;
 
 void WoopsiTemplate::startup(int argc, char **argv) {
@@ -139,7 +139,7 @@ void WoopsiTemplate::shutdown() {
 	Woopsi::shutdown();
 }
 
-void WoopsiTemplate::waitForAOrTouchScreenButtonMessage(MultiLineTextBox* thisLineTextBox, const WoopsiString& thisText) __attribute__ ((optnone)) {
+void WoopsiTemplate::waitForAOrTouchScreenButtonMessage(MultiLineTextBox* thisLineTextBox, const WoopsiString& thisText) {
 	thisLineTextBox->appendText(thisText);
 	scanKeys();
 	while((!(keysDown() & KEY_A)) && (!(keysDown() & KEY_TOUCH))){
@@ -151,7 +151,7 @@ void WoopsiTemplate::waitForAOrTouchScreenButtonMessage(MultiLineTextBox* thisLi
 	}
 }
 
-void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) __attribute__ ((optnone)) {
+void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) {
 
 	// Did a gadget fire this event?
 	if (e.getSource() != NULL) {
@@ -192,7 +192,7 @@ void WoopsiTemplate::handleLidOpen() {
 	}
 }
 
-void WoopsiTemplate::handleClickEvent(const GadgetEventArgs& e) __attribute__ ((optnone)) {
+void WoopsiTemplate::handleClickEvent(const GadgetEventArgs& e) {
 	switch (e.getSource()->getRefcon()) {
 		//_Index Event
 		case 2:{
@@ -292,7 +292,7 @@ void WoopsiTemplate::handleClickEvent(const GadgetEventArgs& e) __attribute__ ((
 	}
 }
 
-vector<string> splitByVector(string str, string token) __attribute__ ((optnone)) {
+vector<string> splitByVector(string str, string token) {
     vector<string>result;
     while(str.size()){
         int index = str.find(token);
@@ -308,7 +308,7 @@ vector<string> splitByVector(string str, string token) __attribute__ ((optnone))
     return result;
 }
 
-bool DownloadFileFromServer(char * downloadAddr, int ServerPort, char * outputPath, MultiLineTextBox* logger) __attribute__ ((optnone)) {
+bool DownloadFileFromServer(char * downloadAddr, int ServerPort, char * outputPath, MultiLineTextBox* logger) {
 	logger->removeText(0);
 	logger->moveCursorToPosition(0);
 	logger->appendText(WoopsiString(downloadAddr));
