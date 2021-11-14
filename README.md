@@ -29,7 +29,7 @@ Also plays WAV/AD-PCM (Intel) files from the directory!
 /release folder has the latest binary precompiled for your convenience.
 
 Latest stable release:
-https://bitbucket.org/Coto88/ToolchainGenericDS-filedownload/get/TGDS1.64Stable.zip
+https://bitbucket.org/Coto88/ToolchainGenericDS-filedownload/get/TGDS1.65.zip
 
 Note: UI Controls experimental.
 
