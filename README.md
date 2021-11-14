@@ -1,8 +1,8 @@
 ![ToolchainGenericDS](img/TGDS-Logo.png)
 
-NTR/TWL SDK: TGDS1.64
+NTR/TWL SDK: TGDS1.65
 
-master: Development branch. Use TGDS1.64Stable: branch for stable features.
+master: Development branch. Use TGDS1.65: branch for stable features.
 
 This is the ToolchainGenericDS Woopsi template project:
 
@@ -29,7 +29,7 @@ Also plays WAV/AD-PCM (Intel) files from the directory!
 /release folder has the latest binary precompiled for your convenience.
 
 Latest stable release:
-https://bitbucket.org/Coto88/ToolchainGenericDS-filedownload/get/TGDS1.64Stable.zip
+https://bitbucket.org/Coto88/ToolchainGenericDS-filedownload/get/TGDS1.65.zip
 
 Note: UI Controls experimental.
 
