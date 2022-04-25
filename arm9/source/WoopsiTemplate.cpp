@@ -156,7 +156,7 @@ void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) {
 	// Did a gadget fire this event?
 	if (e.getSource() != NULL) {
 		// Is the gadget the file requester?
-		if (e.getSource()->getRefcon() == 1) {
+		if ((e.getSource()->getRefcon() == 1)  && (((FileRequester*)e.getSource())->getSelectedOption() != NULL))  {
 			/*
 			//Play WAV/ADPCM if selected from the FileRequester
 			WoopsiString strObj = ((FileRequester*)e.getSource())->getSelectedOption()->getText();
