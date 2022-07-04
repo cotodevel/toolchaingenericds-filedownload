@@ -20,11 +20,6 @@
 #include "dswnifi_lib.h"
 #include "textbox.h"
 
-//C++ part
-using namespace std;
-#include <string>
-#include <vector>
-
 __attribute__((section(".dtcm")))
 WoopsiTemplate * WoopsiTemplateProc = NULL;
 
@@ -273,9 +268,7 @@ void WoopsiTemplate::handleClickEvent(const GadgetEventArgs& e) {
 			int ServerPort = 80;
 			
 			if(DownloadFileFromServer(textBoxValue, ServerPort, fileDownloadDir, _MultiLineTextBoxLogger) == true){
-				memset(outputConsole, 0, sizeof(outputConsole));
-				sprintf(outputConsole, "Download OK @ SD path: %s ", fileDownloadDir);
-				_MultiLineTextBoxLogger->appendText(WoopsiString(outputConsole));
+				
 			}
 			else{
 				_MultiLineTextBoxLogger->appendText(WoopsiString("Download FAIL. Check: URL / DLDI Driver / Internet \n"));
@@ -314,52 +307,96 @@ bool DownloadFileFromServer(char * downloadAddr, int ServerPort, char * outputPa
 	logger->appendText(WoopsiString(downloadAddr));
 	logger->appendText("\n");
 	
-	std::string strURL = string(downloadAddr);
-    vector <string> vecOut = splitByVector(strURL, string("/"));
-    std::string ServerDNS = vecOut.at(0);
-    
-    size_t start = strlen(ServerDNS.c_str());
-    size_t end = strlen(downloadAddr) - strlen(ServerDNS.c_str()); // Assume this is an exclusive bound.
-    std::string strPath = strURL.substr(start, end); 
-	std::string strFilename = vecOut.at(vecOut.size() - 1);
+	// C split to save mem
+	char cpyBuf[256] = {0};
+	strcpy(cpyBuf, downloadAddr);
+	char * outBuf = (char *)malloc(256*10);
 	
-	// Find the IP address of the server, with gethostbyname
-    struct hostent * myhost = gethostbyname(ServerDNS.c_str());
-    logger->appendText("Found IP Address!\n");
- 
+	char * ServerDNSTemp = (char*)((char*)outBuf + (0*256));
+	char * strPathTemp = (char*)((char*)outBuf + (1*256));
+	char strPath[256];
+	int matchCount = str_split((char*)cpyBuf, (char*)"/", outBuf, 10, 256);
+	strcpy(&strPath[1], strPathTemp);
+	strPath[0] = '/';
+	
+	char ServerDNS[256];
+	strcpy(ServerDNS, ServerDNSTemp);
+	free(outBuf);
+	
+	//1 dir or more + filename = fullpath
+	if(matchCount > 1){
+	    int urlLen = strlen(downloadAddr);
+	    int startPos = 0;
+	    while(downloadAddr[startPos] != '/'){
+	        startPos++;
+	    }
+	    memset(strPath, 0, sizeof(strPath));
+	    strcpy(strPath, (char*)&downloadAddr[startPos]);
+	}
+	
+	//get filename from result
+	char strFilename[256];
+	int fnamePos = 0;
+	int topPathLen = strlen((char*)&strPath[1]);
+	while(strPath[topPathLen] != '/'){
+	    topPathLen--;
+	}
+	strcpy(strFilename, (char*)&strPath[topPathLen + 1]);
+	
+	// C end
+	
     // Create a TCP socket
     int my_socket = socket( AF_INET, SOCK_STREAM, 0 );
     logger->appendText("Created Socket!\n");
 
     // Tell the socket to connect to the IP address we found, on port 80 (HTTP)
     struct sockaddr_in sain;
-    sain.sin_family = AF_INET;
-    sain.sin_port = htons(80);
-    sain.sin_addr.s_addr= *( (unsigned long *)(myhost->h_addr_list[0]) );
-    connect( my_socket,(struct sockaddr *)&sain, sizeof(sain) );
+	memset(&sain, 0, sizeof(struct sockaddr_in));
+    
+	sain.sin_family = AF_INET;
+    sain.sin_port = htons(ServerPort);
+    
+	if(
+		(ServerDNS[0] == 'w')
+		&&
+		(ServerDNS[1] == 'w')
+		&&
+		(ServerDNS[2] == 'w')
+		){
+		// Find the IP address of the server, with gethostbyname
+		struct hostent * myhost = gethostbyname(ServerDNS);
+		logger->appendText("Resolved DNS & Found IP Address!\n");
+		sain.sin_addr.s_addr= *( (unsigned long *)(myhost->h_addr_list[0]) );
+	}
+	else{
+		sain.sin_addr.s_addr = inet_addr(ServerDNS);
+		logger->appendText("Direct IP Address!\n");
+	}
+	
+	connect( my_socket,(struct sockaddr *)&sain, sizeof(sain) );
     logger->appendText("Connected to server!\n");
 	
     //Send request
 	FILE *file = NULL;
-	char logConsole[256+1];
-	char * server_reply = (char *)TGDSARM9Malloc(100000);
+	char logConsole[256];
+	char * server_reply = (char *)TGDSARM9Malloc(64*1024);
     int total_len = 0;
-	const char * message =  string("GET " + strPath + " HTTP/1.1\r\nHost: " + ServerDNS +" \r\n\r\n Connection: keep-alive\r\n\r\n Keep-Alive: 300\r\n").c_str();
-    if( send(my_socket, message , strlen(message) , 0) < 0)
-    {
+	char message[256]; 
+	sprintf(message, "GET %s HTTP/1.1\r\nHost: %s \r\n\r\n Connection: keep-alive\r\n\r\n Keep-Alive: 300\r\n", strPath,  ServerDNS);
+    if( send(my_socket, message , strlen(message) , 0) < 0){
         return false;
     }
     
-	remove( string(string(outputPath) + strFilename).c_str() );
-    file = fopen(string(string(outputPath) + strFilename).c_str(), "w+");
+	char fullFilePath[256];
+	sprintf(fullFilePath, "%s%s", outputPath, strFilename);
+	remove(fullFilePath);
+    file = fopen(fullFilePath, "w+");
     if(file == NULL){
         return false;
 	}
-	
 	logger->appendText("Download start.\n");
-	
 	int received_len = 0;
-	while( ( received_len = recv(my_socket, server_reply, 100000, 0 ) ) != 0 ) { // if recv returns 0, the socket has been closed.
+	while( ( received_len = recv(my_socket, server_reply, 64*1024, 0 ) ) != 0 ) { // if recv returns 0, the socket has been closed.
 		if(received_len>0) { // data was received!
 			total_len += received_len;
 			fwrite(server_reply, 1, received_len, file);
@@ -371,11 +408,13 @@ bool DownloadFileFromServer(char * downloadAddr, int ServerPort, char * outputPa
 	}
 	
 	TGDSARM9Free(server_reply);
-	
 	shutdown(my_socket,0); // good practice to shutdown the socket.
 	closesocket(my_socket); // remove the socket.
     fclose(file);
-	logger->appendText("Download OK.\n");
+	logger->appendText("Download OK @ SD path: \n");
+	logger->appendText(WoopsiString(fullFilePath));
+	logger->appendText(" ");
+	
 	return true;
 }
 
