@@ -17,8 +17,6 @@
 using namespace std;
 using namespace WoopsiUI;
 
-#define TGDSPROJECTNAME ((char*) "ToolchainGenericDS-filedownload")
-
 //Helpers to be used with int AsynchronousProgramState;
 
 //WoopsiUI asynchronous events
