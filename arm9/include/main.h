@@ -43,9 +43,6 @@ extern struct fd * _FileHandleAudio;
 extern bool stopSoundStreamUser();
 extern void closeSoundUser();
 
-extern char args[8][MAX_TGDSFILENAME_LENGTH];
-extern char *argvs[8];
-
 #ifdef __cplusplus
 }
 #endif
