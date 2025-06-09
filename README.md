@@ -7,7 +7,7 @@ master: Development branch. Use TGDS1.65: branch for stable features.
 This is the ToolchainGenericDS Woopsi template project:
 
 1.	Compile Toolchain:
-To compile this project you will need to follow the steps at https://bitbucket.org/Coto88/toolchaingenericds :
+To compile this project you will need to follow the steps at https://github.com/cotodevel/toolchaingenericds :
 Then simply extract the project somewhere.
 
 2.	Compile this project: 
@@ -34,7 +34,7 @@ to take out the SD card repeteadly and thus, causing it to wear out and to break
 Usage:
 - Make sure the wifi settings in the NintendoDS are properly set up, so you're already able to connect to internet from it.
 
-- Get a copy of ToolchainGenericDS-multiboot: https://bitbucket.org/Coto88/ToolchainGenericDS-multiboot/get/TGDS1.65.zip
+- Get a copy of ToolchainGenericDS-multiboot: http://github.com/cotodevel/ToolchainGenericDS-multiboot/archive/TGDS1.65.zip
 Follow the instructions there and get either the TWL or NTR version. Make sure you update the computer IP address used to build TGDS Projects, 
 in the file: toolchaingenericds-multiboot-config.txt of said repository before moving it into SD card.
 
@@ -59,7 +59,7 @@ and toolchaingenericds-multiboot-config.txt (update here, the computer's IP you 
 /release folder has the latest binary precompiled for your convenience.
 
 Latest stable release:
-https://bitbucket.org/Coto88/ToolchainGenericDS-filedownload/get/TGDS1.65.zip
+http://github.com/cotodevel/ToolchainGenericDS-filedownload/archive/TGDS1.65.zip
 
 Note: UI Controls experimental.
 
