@@ -45,6 +45,7 @@ USA
 #include "utils.twl.h"
 #include "spitscTGDS.h"
 #include "loader.h"
+#include "TGDS_threads.h"
 
 // Includes
 #include "WoopsiTemplate.h"
@@ -53,17 +54,23 @@ USA
 #include "fatfslayerTGDS.h"
 #include <stdio.h>
 
-//ARM7 VRAM core
+//TGDS-MB ARM7 Bootldr (embedded ARM7 VRAM core)
 #include "arm7bootldr.h"
 #include "arm7bootldr_twl.h"
 
+#ifdef ARM9
+__attribute__((section(".dtcm")))
+#endif
+struct task_Context * internalTGDSThreads = NULL;
+
 u32 * getTGDSMBV3ARM7Bootloader(){
 	if(__dsimode == false){
-		return (u32*)&arm7bootldr[0];	
+		swiDecompressLZSSWram((u8*)&arm7bootldr[0], (u8*)TGDS_MB_V3_ARM7_SCRATCHPAD_LZSS_DECOMP_BUF);
 	}
 	else{
-		return (u32*)&arm7bootldr_twl[0];
+		swiDecompressLZSSWram((u8*)&arm7bootldr_twl[0], (u8*)TGDS_MB_V3_ARM7_SCRATCHPAD_LZSS_DECOMP_BUF);
 	}
+	return (u32*)TGDS_MB_V3_ARM7_SCRATCHPAD_LZSS_DECOMP_BUF;
 }
 
 //TGDS Soundstreaming API
@@ -108,10 +115,17 @@ __attribute__ ((optnone))
 #endif
 int main(int argc, char **argv) {
 	/*			TGDS 1.6 Standard ARM9 Init code start	*/
+
 	//Save Stage 1: IWRAM ARM7 payload: NTR/TWL (0x03800000)
 	memcpy((void *)TGDS_MB_V3_ARM7_STAGE1_ADDR, (const void *)0x02380000, (int)(96*1024));
 	coherent_user_range_by_size((uint32)TGDS_MB_V3_ARM7_STAGE1_ADDR, (int)(96*1024));
 	
+	//Execute Stage 2: VRAM ARM7 payload: TWL (0x06000000). Otherwise DLDI init failure
+	if(__dsimode == true){ //Fixes TGDS WoopsiSDK TWL compatibility on TWL hardware
+		u32 * payload = getTGDSMBV3ARM7Bootloader();
+		executeARM7Payload((u32)0x02380000, 96*1024, payload);
+	}
+
 	bool isTGDSCustomConsole = false;	//set default console or custom console: default console
 	GUI_init(isTGDSCustomConsole);
 	GUI_clear();
@@ -123,7 +137,8 @@ int main(int argc, char **argv) {
 	asm("mcr	p15, 0, r0, c7, c10, 4");
 	flush_icache_all();
 	flush_dcache_all();
-	
+	internalTGDSThreads = getTGDSThreadSystem();
+
 	printf("   ");
 	printf("   ");
 	
@@ -170,8 +185,68 @@ int main(int argc, char **argv) {
 	return WoopsiTemplateApp.main(argc, argv);
 	
 	while (1){
-		handleARM9SVC();	/* Do not remove, handles TGDS services */
-		IRQVBlankWait();
+		bool waitForVblank = false;
+		int threadsRan = runThreads(internalTGDSThreads, waitForVblank);
 	}
 	return 0;
 }
+
+//////////////////////////////////////////////////////// Threading User code start : TGDS Project specific ////////////////////////////////////////////////////////
+//User callback when Task Overflows. Intended for debugging purposes only, as normal user code tasks won't overflow if a task is implemented properly.Add commentMore actions
+//	u32 * args = This Task context
+#if (defined(__GNUC__) && !defined(__clang__))
+__attribute__((optimize("O0")))
+#endif
+#if (!defined(__GNUC__) && defined(__clang__))
+__attribute__ ((optnone))
+#endif
+void onThreadOverflowUserCode(u32 * args){
+	struct task_def * thisTask = (struct task_def *)args;
+	struct task_Context * parentTaskCtx = thisTask->parentTaskCtx;	//get parent Task Context node 
+	char threadStatus[64];
+	switch(thisTask->taskStatus){
+		case(INVAL_THREAD):{
+			strcpy(threadStatus, "INVAL_THREAD");
+		}break;
+		
+		case(THREAD_OVERFLOW):{
+			strcpy(threadStatus, "THREAD_OVERFLOW");
+		}break;
+		
+		case(THREAD_EXECUTE_OK_WAIT_FOR_SLEEP):{
+			strcpy(threadStatus, "THREAD_EXECUTE_OK_WAIT_FOR_SLEEP");
+		}break;
+		
+		case(THREAD_EXECUTE_OK_WAKEUP_FROM_SLEEP_GO_IDLE):{
+			strcpy(threadStatus, "THREAD_EXECUTE_OK_WAKEUP_FROM_SLEEP_GO_IDLE");
+		}break;
+	}
+	
+	char debOut2[256];
+	char timerUnitsMeasurement[32];
+	if( thisTask->taskStatus == THREAD_OVERFLOW){
+		if(thisTask->timerFormat == tUnitsMilliseconds){
+			strcpy(timerUnitsMeasurement, "ms");
+		}
+		else if(thisTask->timerFormat == tUnitsMicroseconds){
+			strcpy(timerUnitsMeasurement, "us");
+		} 
+		else{
+			strcpy(timerUnitsMeasurement, "-");
+		}
+		sprintf(debOut2, "[%s]. Thread requires at least (%d) %s. ", threadStatus, thisTask->remainingThreadTime, timerUnitsMeasurement);
+	}
+	else{
+		sprintf(debOut2, "[%s]. ", threadStatus);
+	}
+	
+	int TGDSDebuggerStage = 10;
+	u8 fwNo = *(u8*)(0x027FF000 + 0x5D);
+	handleDSInitOutputMessage((char*)debOut2);
+	handleDSInitError(TGDSDebuggerStage, (u32)fwNo);
+	
+	while(1==1){
+		HaltUntilIRQ();
+	}
+}
+//////////////////////////////////////////////////////////////////////// Threading User code end /////////////////////////////////////////////////////////////////////////////

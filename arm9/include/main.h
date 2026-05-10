@@ -26,6 +26,7 @@ USA
 #include "utilsTGDS.h"
 #include "limitsTGDS.h"
 #include "dldi.h"
+#include "TGDS_threads.h"
 
 #endif
 
@@ -33,6 +34,7 @@ USA
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 extern u32 * getTGDSMBV3ARM7Bootloader();
 extern int main(int argc, char **argv);
@@ -44,6 +46,7 @@ extern struct fd * _FileHandleVideo;
 extern struct fd * _FileHandleAudio;
 extern bool stopSoundStreamUser();
 extern void closeSoundUser();
+extern struct task_Context * internalTGDSThreads;
 
 #ifdef __cplusplus
 }
