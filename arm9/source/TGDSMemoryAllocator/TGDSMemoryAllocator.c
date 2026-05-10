@@ -23,7 +23,6 @@ USA
 #include "xmem.h"
 #include "dldi.h"
 #include "dsregs.h"
-#include "utilsTGDS.h"
 
 ////////[For custom Memory Allocator implementation]:////////
 //You need to override getProjectSpecificMemoryAllocatorSetup():
@@ -50,8 +49,7 @@ struct AllocatorInstance * getProjectSpecificMemoryAllocatorSetup(bool isCustomT
 	xmemsize = xmemsize - (xmemsize/XMEM_BS) - 1024;
 	xmemsize = xmemsize - (xmemsize%1024);
 	XmemSetup(xmemsize, XMEM_BS);
-	XmemInit(customMemoryAllocator->ARM9MallocStart
-	address, (u32)customMemoryAllocator->memoryToAllocate);
+	XmemInit(customMemoryAllocator->ARM9MallocStartaddress, (u32)customMemoryAllocator->memoryToAllocate);
 	
 	//Memory Setup: ARM7 TGDS 64K = 0x03800000 ~ 0x03810000. TGDS Sound Streaming code: Enabled
 	WRAM_CR = WRAM_32KARM9_0KARM7;
